@@ -1,4 +1,4 @@
-# instamirror 1.1
+# InstaMirror 1.1
 
 About:
 
