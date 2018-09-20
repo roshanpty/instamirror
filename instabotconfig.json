@@ -1,0 +1,17 @@
+{
+	"_comment1":"This is the configuration file for instabot program",
+	"_comment2":"All the basic configurations including credentials and API tokens need to be configured here",
+	"_comment3":"This file contains sensitive information and must be stored securely.",
+	"_comment4":"Instabot is now instamirror and it no longer support supplying parameters as arguments",
+	"facebook" : {
+		"GraphAPIURL":"https://graph.facebook.com/v3.1/",
+		"PageID":"<Page ID here>",
+		"GraphAPINode": "/posts?fields=attachments%7Bdescription%2Cmedia%7D%2Ccreated_time&date_format=U&limit=1&access_token=",
+		"PageToken":"<Your Permanent page access token here. Steps to generate the token is in the readme.>",
+		"RefreshInterval":600
+	},
+	"instagram" : {
+		"UserName":"<Instagram Username>",
+		"Password":"<Instagram Password>"
+	}
+}
