@@ -8,7 +8,8 @@
 		"PageID":"<Page ID here>",
 		"GraphAPINode": "/posts?fields=attachments%7Bdescription%2Cmedia%7D%2Ccreated_time&date_format=U&limit=1&access_token=",
 		"PageToken":"<Your Permanent page access token here. Steps to generate the token is in the readme.>",
-		"RefreshInterval":600
+		"RefreshInterval":600,
+		"PostExcludeSignature": ["http://","https://"]
 	},
 	"instagram" : {
 		"UserName":"<Instagram Username>",
