@@ -87,8 +87,15 @@ For instamirror to properly work, instaconfig.json file has to be configured cor
 Roshan Thomas
 * [SecVibe](https://secvibe.com)
 * [LinkedIn](https://www.linkedin.com/in/roshanpty/)
+* [Twitter](https://twitter.com/roshanpty)
 
 ## Disclaimer:
 - Use this tool at your own risk. 
-- The author would not be able to provide any support.
 - The author cannot be held liable for any loss caused by the use of this tool
+- The application uses sensitive information including permanent API keys, usernames and passwords. Run it in a secure environment.
+ ## Support:
+ 
+ Error running the tool?
+ Confusion in configuring the tool?
+ 
+ Though I do not provide active support, I would try to help as much as possible. Raise it as an issue on the github project or tweet @roshanpty
