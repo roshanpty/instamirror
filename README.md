@@ -1,5 +1,9 @@
 # InstaMirror 1.1
 
+**!WARNING!**
+
+There is a significant amount of preconfiguration effort associated with this setup. If you like it the easier way, wait for our Instamirrror-Web service release which wouldn't take so long...
+
 ## About:
 
 Instamirror 1.1 is a workaround to enable cross posting between Facebook Pages and Instagram profiles. By default Facebook doesn't provide any feature or API to enable this and they have limited Instagram publish API access only to approved business partners. Follow the instructions in this README and your facebook page posts shall automatically be mirrored on to your instagram profile.
