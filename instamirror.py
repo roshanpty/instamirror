@@ -7,41 +7,69 @@ import urllib
 import urllib2
 import json
 import os
+import argparse
 
-# Loading config file with Facebook API details
-# The page token need to be a 'Page Access Token'
+class config:
+	def loadConfig(self,confile):
+		with open(confile, 'r') as f:
+			configuredata = json.load(f)
+    		return configuredata
 
-with open('instabotconfig.json', 'r') as f:
-    config = json.load(f)
-print "Configuration file loaded."
-print "Changes in credentials must be made to the configuration file only after quitting the instamirror program."
+	def fbURL(self,datastream):
+		GraphAPI = datastream["facebook"]["GraphAPIURL"]
+		pageID = datastream["facebook"]["PageID"]
+		GAPIMethod = datastream["facebook"]["GraphAPINode"]
+		PageToken = datastream["facebook"]["PageToken"]
+		qURL = GraphAPI+pageID+GAPIMethod+PageToken
+		return qURL
+	def fbConf(self,datastream):
+		rTime = datastream["facebook"]["RefreshInterval"]
+		eString = datastream["facebook"]["PostExcludeSignature"]
+		fbVal = [rTime,eString]
+		return fbVal
 
-tstp = 1 # Timestamp placeholder
-lAspRatio = 1.11 # Aspect Ratio float holder
-minAsp = 0.8
-maxAsp = 1.9
+	def instaLogon(self,datastream):
+		InstaUser = datastream["instagram"]["UserName"]
+		InstaPass = datastream["instagram"]["Password"]
+		global InstagramAPI
+		# Instagram Login
+		InstagramAPI = InstagramAPI(InstaUser,InstaPass)
+		InstagramAPI.login()  # login
+		
+
+
+	
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-c","--configfile", help="Path to json configuration input file.", default = "instamirror_beta.config")
+args = parser.parse_args()
+if not os.path.isfile(args.configfile):
+	print "The provided configfile is not a valid path."
+	parser.print_help()
+	exit()
+
+cinstance = config() # instantiating config class
+cnf = cinstance.loadConfig(args.configfile) # loading value
+qURL = cinstance.fbURL(cnf) # generating fb api link
+rTime = cinstance.fbConf(cnf)[0]
+eString = cinstance.fbConf(cnf)[1]
+cinstance.instaLogon(cnf)
+
+tstp = 1 # Timestamp placeholder	
+minAsp = 0.9
+maxAsp = 1.8
 eFlag = 0
-GraphAPI = config["facebook"]["GraphAPIURL"]
-pageID = config["facebook"]["PageID"]
-GAPIMethod = config["facebook"]["GraphAPINode"]
-PageToken = config["facebook"]["PageToken"]
-rTime = config["facebook"]["RefreshInterval"]
-InstaUser = config["instagram"]["UserName"]
-InstaPass = config["instagram"]["Password"]
-eString = config["facebook"]["PostExcludeSignature"]
-
-# Constructing the URL to query for last post on page.
-
-qURL = GraphAPI+pageID+GAPIMethod+PageToken
-
-# Instagram Login
-InstagramAPI = InstagramAPI(InstaUser,InstaPass)
-InstagramAPI.login()  # login
 
 # Loop to regularly query page feed for new posts
 while True:
 	eFlag = 0
-	fbFeed = urllib2.urlopen(qURL)
+	mFlag = 0
+	try :
+		fbFeed = urllib2.urlopen(qURL)
+	except:
+		print "Couldnt load feed from FB"
+		time.sleep(300)
+		continue
 	lPost = json.load(fbFeed) 
 	print "Loading the page feed..."
 
@@ -49,15 +77,19 @@ while True:
 		# Separating data from the feed json response.
 		lCaption = lPost["data"][0]["attachments"]["data"][0]["description"]
 		lPhotoSrc = lPost["data"][0]["attachments"]["data"][0]["media"]["image"]["src"]
-		lHeight = lPost["data"][0]["attachments"]["data"][0]["media"]["image"]["height"]
-		lWidth = lPost["data"][0]["attachments"]["data"][0]["media"]["image"]["width"]
+		lHeight = float(lPost["data"][0]["attachments"]["data"][0]["media"]["image"]["height"])
+		lWidth = float(lPost["data"][0]["attachments"]["data"][0]["media"]["image"]["width"])
 		lAspRatio = lWidth/lHeight
 		lTimstamp = lPost["data"][0]["created_time"]
 
 	except:
 		print "Error loading structured facebook feed. \n Potentially due to a post without caption or feed unreachable."
 		continue
-
+	datafile = file('log.txt')
+	for line in datafile:
+		if str(lTimstamp) in line:
+			mFlag = 1
+			break
 	# Set the flag if the caption contains any unsupported string
 	for s in eString:
 		if s in lCaption:
@@ -67,13 +99,18 @@ while True:
 	# whether any new post was uploaded on page 
 	if lTimstamp > tstp:
 		print "There is a new post on page..."
+		print "Adding the timestamp to log"
+		tstplog = str(lTimstamp)+"\n"
+		with open("log.txt", "a") as myfile:
+			myfile.write(tstplog)
 		tstp = lTimstamp # update placeholder value
+		print "Aspect ratio of the new image: ",lHeight,"/",lWidth,"=",lAspRatio,"\n"
 		
-		if eFlag == 1:
-			print "This post contains an exclude string configured via the config file."
+		if eFlag == 1 or mFlag == 1:
+			print "This post contains an exclude string configured via the config file or was already posted."
 			print "This will not be posted."
 		else:
-			print "Post does not include any exclude strings"
+			print "Post does not include any exclude strings and wasn't posted earlier"
 			print "Proceeding further..."
 
 			# Check whether the photo has a valid aspect ratio.
@@ -97,7 +134,7 @@ while True:
 			elif lAspRatio < minAsp:
 				# Defining the instagram supported aspect ratio for new image.
 				nHeight = lHeight
-				nWidth = 0.9*nHeight
+				nWidth = minAsp*nHeight
 				print "The aspect ratio of attached image is unsupported by instagram."
 				print "Reason: Image height is too large"
 			
@@ -127,7 +164,7 @@ while True:
 			elif lAspRatio > maxAsp:
 				# Defining the instagram supported aspect ratio for new image.
 				nWidth = lWidth
-				nHeight = nWidth/1.8
+				nHeight = nWidth/maxAsp
 				print "The aspect ratio of attached image is unsupported by instagram."
 				print "Reason: Image is too wide"
 	
